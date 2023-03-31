@@ -1,0 +1,5 @@
+config.js
+dist
+*.html
+.vscode
+node_modules

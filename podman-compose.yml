@@ -1,0 +1,22 @@
+services:
+  pibus:
+    build: '.'
+    environment:
+      - 'PIBUS_DIR=/pibus'
+      - 'PIBUS_BASE_URL=file:///pibus/'
+      - 'PIBUS_INTERVAL=30'
+    volumes:
+      - 'pibus-html:/pibus'
+  cog:
+    image: 'cog:latest'
+    environment:
+      - 'COG_URL=file:///pibus/index.html'
+      - 'WLR_LIBINPUT_NO_DEVICES=1'
+    volumes:
+      - 'pibus-html:/pibus:ro'
+      - '/dev/dri:/dev/dri'
+    privileged: true
+    depends_on:
+      - 'pibus'
+volumes:
+  - pibus-html
