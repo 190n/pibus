@@ -19,4 +19,4 @@ services:
     depends_on:
       - 'pibus'
 volumes:
-  - pibus-html
+  pibus-html:
