@@ -11,4 +11,5 @@ WORKDIR /app
 COPY package.json package-lock.json config.js run.sh ./
 COPY --from=tsc /app/dist ./dist
 RUN npm ci --omit dev
+HEALTHCHECK --interval=30s --timeout=1s --start-period=5s --retries=3 CMD [ "sh", "-c", "stat $PIBUS_DIR/index.html" ]
 ENTRYPOINT [ "./run.sh" ]
