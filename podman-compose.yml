@@ -1,6 +1,6 @@
 services:
   pibus:
-    build: '.'
+    image: '190n/pibus:latest'
     environment:
       - 'PIBUS_DIR=/pibus'
       - 'PIBUS_BASE_URL=file:///pibus/'
@@ -8,7 +8,7 @@ services:
     volumes:
       - 'pibus-html:/pibus'
   cog:
-    image: 'cog:latest'
+    image: '190n/cog:latest'
     environment:
       - 'COG_URL=file:///pibus/index.html'
       - 'WLR_LIBINPUT_NO_DEVICES=1'
