@@ -5,7 +5,7 @@
 # fi
 
 # ensure something is visible before we try to run
-cat <<EOF
+cat > $PIBUS_DIR/index.html <<EOF
 <!doctype html>
 <html lang="en">
 	<head>
@@ -28,7 +28,7 @@ cat <<EOF
 		</script>
 	</body>
 </html>
-EOF > $PIBUS_DIR/index.html
+EOF
 
 while true; do
 	echo "<style>pre { color: white; }</style><pre>" > $PIBUS_DIR/errors.html
