@@ -4,6 +4,32 @@
 # 	npx tsc
 # fi
 
+# ensure something is visible before we try to run
+cat <<EOF
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<style>
+			body {
+				background-color: black;
+				color: white;
+			}
+		</style>
+	</head>
+	<body>
+		<p>
+			The script has not finished running yet. stderr output, if any, is shown below.
+			Reloading in 5 seconds...
+		</p>
+		<iframe src="$PIBUS_BASE_URL/errors.html"></iframe>
+		<script>
+			setTimeout(() => window.location.reload(), 5000);
+		</script>
+	</body>
+</html>
+EOF > $PIBUS_DIR/index.html
+
 while true; do
 	echo "<style>pre { color: white; }</style><pre>" > $PIBUS_DIR/errors.html
 	echo -n "running... "
