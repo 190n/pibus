@@ -7,6 +7,7 @@ services:
       - 'PIBUS_INTERVAL=30'
     volumes:
       - 'pibus-html:/pibus'
+      - './config.js:/app/config.js'
   cog:
     image: '190n/cog:latest'
     environment:
