@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 
-import routes from '../config';
+import config from '../config';
 
 type ArrivalsResponse = Array<{
 	RouteID: number;
@@ -24,15 +24,62 @@ async function getArrivals(stop: number, pattern: number): Promise<Arrival[]> {
 	}));
 }
 
+interface RouteListProps {
+	routes: Array<{ name: string; times: Arrival[] }>;
+}
+
+function RouteList({ routes }: RouteListProps): JSX.Element {
+	return (
+		<ul>
+			{routes.map(({ name, times }) => (
+				<li key={name}>
+					<strong>{name}</strong>:&nbsp;
+					{times.length == 0 ? (
+						'(none)'
+					) : (
+						<>
+							{times.map(({ minutes, vehicle }, i) => {
+								let className = 'time';
+								if (minutes <= 5) {
+									className += ' danger';
+								} else if (minutes <= 10) {
+									className += ' warning';
+								}
+								return (
+									<React.Fragment key={i}>
+										<strong className={className}>{minutes}</strong>
+										&nbsp;
+										<span className="vehicle">
+											(
+											{typeof vehicle == 'number'
+												? `bus ${vehicle}`
+												: 'scheduled'}
+											)
+										</span>
+										{i == times.length - 1 ? ' ' : ', '}
+									</React.Fragment>
+								);
+							})}
+							minutes
+						</>
+					)}
+				</li>
+			))}
+		</ul>
+	);
+}
+
 (async () => {
-	let data: Array<{ name: string; times: Arrival[] }>;
+	let data: Record<string, Array<{ name: string; times: Arrival[] }>> = {};
 	try {
-		data = await Promise.all(
-			routes.map(async (r) => ({
-				name: r.name,
-				times: await getArrivals(r.stop, r.pattern),
-			}))
-		);
+		for (const [sectionName, routes] of Object.entries(config.sections)) {
+			data[sectionName] = await Promise.all(
+				routes.map(async (r) => ({
+					name: r.name,
+					times: await getArrivals(r.stop, r.pattern),
+				}))
+			);
+		}
 	} catch (e) {
 		console.error(JSON.stringify(e));
 		process.exit(1);
@@ -94,7 +141,10 @@ async function getArrivals(stop: number, pattern: number): Promise<Arrival[]> {
 
 						setTimeout(() => {
 							document.getElementById('updatedTime').classList.add('danger');
-						}, Math.max(0, 60000 - (Date.now() - updatedTime)));
+						}, Math.max(0, ${
+							// convert to milliseconds, then double
+							2 * 1000 * config.refreshInterval
+						} - (Date.now() - updatedTime)));
 						setTimeout(() => window.location.reload(), 5000);
 						`,
 						}}
@@ -103,45 +153,17 @@ async function getArrivals(stop: number, pattern: number): Promise<Arrival[]> {
 				<body>
 					<main>
 						<h1>Bus Arrivals</h1>
-						<ul>
-							{data.map(({ name, times }) => (
-								<li key={name}>
-									<strong>{name}</strong>:&nbsp;
-									{times.length == 0 ? (
-										'(none)'
-									) : (
-										<>
-											{times.map(({ minutes, vehicle }, i) => {
-												let className = 'time';
-												if (minutes <= 5) {
-													className += ' danger';
-												} else if (minutes <= 10) {
-													className += ' warning';
-												}
-												return (
-													<React.Fragment key={i}>
-														<strong className={className}>{minutes}</strong>
-														&nbsp;
-														<span className="vehicle">
-															(
-															{typeof vehicle == 'number'
-																? `bus ${vehicle}`
-																: 'scheduled'}
-															)
-														</span>
-														{i == times.length - 1 ? ' ' : ', '}
-													</React.Fragment>
-												);
-											})}
-											minutes
-										</>
-									)}
-								</li>
-							))}
-						</ul>
-						<iframe
-							src={`${process.env.PIBUS_BASE_URL ?? ''}/errors.html`}
-						></iframe>
+						{Object.keys(data).length == 1 ? (
+							<RouteList routes={Object.values(data)[0]} />
+						) : (
+							Object.entries(data).map(([sectionName, routes]) => (
+								<section key={sectionName}>
+									<h2>{sectionName}</h2>
+									<RouteList routes={routes} />
+								</section>
+							))
+						)}
+						<iframe src="errors.html"></iframe>
 					</main>
 					<footer>
 						Updated:&nbsp;

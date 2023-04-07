@@ -1,13 +1,11 @@
 services:
   pibus:
     image: '190n/pibus:latest'
-    environment:
-      - 'PIBUS_DIR=/pibus'
-      - 'PIBUS_BASE_URL=file:///pibus/'
-      - 'PIBUS_INTERVAL=30'
     volumes:
       - 'pibus-html:/pibus'
       - './config.js:/app/config.js'
+    environment:
+      - 'TZ=America/Los_Angeles'
   cog:
     image: '190n/cog:latest'
     environment:
